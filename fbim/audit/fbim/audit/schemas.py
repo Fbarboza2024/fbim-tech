@@ -1,2 +1,0 @@
-class AuditEvent(dict):
-    pass
