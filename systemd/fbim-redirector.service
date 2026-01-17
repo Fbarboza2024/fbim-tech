@@ -1,0 +1,13 @@
+[Unit]
+Description=FBIM Redirector
+After=network.target
+
+[Service]
+User=fbim
+WorkingDirectory=/home/fbim/fbim-tech
+ExecStart=/home/fbim/fbim-tech/venv/bin/python fbim/redirector/app.py
+Restart=always
+EnvironmentFile=/home/fbim/fbim-tech/.env
+
+[Install]
+WantedBy=multi-user.target
