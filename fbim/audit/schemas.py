@@ -1,1 +1,3 @@
+class AuditEvent(dict):
+    pass
 
