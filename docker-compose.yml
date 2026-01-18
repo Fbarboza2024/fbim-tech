@@ -38,3 +38,10 @@ kill_switch_governance:
   volumes:
     - ./data:/app/data
     - /var/run/docker.sock:/var/run/docker.sock
+    rollback_governance:
+  build: ./governance/rollback
+  restart: always
+  volumes:
+    - ./data:/app/data
+    - /var/run/docker.sock:/var/run/docker.sock
+
