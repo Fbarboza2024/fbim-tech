@@ -22,3 +22,8 @@ services:
     restart: always
     volumes:
       - ./data:/app/data
+audit_governance:
+  build: ./governance/audit_bot
+  restart: always
+  volumes:
+    - ./data:/app/data
