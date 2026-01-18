@@ -2,9 +2,11 @@ import { chromium } from "playwright";
 import fs from "fs";
 
 export async function createContext(cookiesPath) {
-  const browser = await chromium.launch({
-    headless: true
-  });
+ const browser = await chromium.launch({
+  headless: false,
+  args: ["--no-sandbox", "--disable-setuid-sandbox"]
+});
+
 
   const context = await browser.newContext();
 
