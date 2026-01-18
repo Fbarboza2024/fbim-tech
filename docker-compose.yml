@@ -6,11 +6,10 @@ services:
     container_name: fbim-tech
     restart: always
     env_file: .env
+
     volumes:
       - ./secure/cookies:/secure/cookies
       - ./data:/app/data
-    deploy:
-      resources:
-        limits:
-          cpus: "6.0"
-          memory: 10G
+
+    mem_limit: 10g
+    cpus: "6.0"
