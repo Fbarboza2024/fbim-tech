@@ -2,6 +2,9 @@ from governance.core.events import emit_event
 
 def scale_up(bot_id: str):
     emit_event(
-        event_type="SCALE_UP",
+        "SCALE_UP_REQUEST",
         payload={"bot_id": bot_id}
     )
+
+if __name__ == "__main__":
+    pass
