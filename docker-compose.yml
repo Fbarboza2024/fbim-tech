@@ -27,3 +27,8 @@ audit_governance:
   restart: always
   volumes:
     - ./data:/app/data
+health_score_governance:
+  build: ./governance/health_score
+  restart: always
+  volumes:
+    - ./data:/app/data
