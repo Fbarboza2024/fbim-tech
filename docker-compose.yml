@@ -1,50 +1,59 @@
 services:
   hr_governance:
+  container_name: hr_governance
     build: ./governance/hr_bot
     restart: always
     volumes:
       - ./data:/app/data
 
   strategist_governance:
+   container_name: strategist_governance
     build: ./governance/ai_strategist
     restart: always
     volumes:
       - ./data:/app/data
 
   scale_governance:
+   container_name: scale_governance
     build: ./governance/auto_scale
     restart: always
     volumes:
       - ./data:/app/data
 
   lab_governance:
+   container_name: lab_governance
     build: ./governance/lab_bot
     restart: always
     volumes:
       - ./data:/app/data
 audit_governance:
+ container_name: audit_governance
   build: ./governance/audit_bot
   restart: always
   volumes:
     - ./data:/app/data
 health_score_governance:
+ container_name: health_score_governance
   build: ./governance/health_score
   restart: always
   volumes:
     - ./data:/app/data
 kill_switch_governance:
+ container_name: kill_switch_governance
   build: ./governance/kill_switch
   restart: always
   volumes:
     - ./data:/app/data
     - /var/run/docker.sock:/var/run/docker.sock
     rollback_governance:
+     container_name: rollback_governance
   build: ./governance/rollback
   restart: always
   volumes:
     - ./data:/app/data
     - /var/run/docker.sock:/var/run/docker.sock
     chaos_governance:
+     container_name: chaos_governance
   build: ./governance/chaos_bot
   restart: always
   volumes:
