@@ -1,9 +1,13 @@
 import { createContext } from "../core/browser.js";
 
 export async function runTikTok() {
-  const cookies = process.env.TIKTOK_1_COOKIES;
+  const cookiesPath = process.env.TIKTOK_1_COOKIES;
 
-  const { browser, context } = await createContext(cookies);
+  if (!cookiesPath) {
+    throw new Error("TIKTOK_1_COOKIES não definido no .env");
+  }
+
+  const { browser, context } = await createContext(cookiesPath);
   const page = await context.newPage();
 
   console.log("📲 TikTok — abrindo feed");
