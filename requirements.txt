@@ -1,9 +1,1 @@
-python-binance==1.0.19
-pybit==5.6.2
-python-dotenv==1.0.0
-flask==3.0.0
-requests==2.31.0
-pyyaml
-matplotlib
-ccxt
-psutil
+# intentionally empty
