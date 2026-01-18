@@ -1,13 +1,12 @@
-FROM mcr.microsoft.com/playwright:v1.43.0-jammy
+FROM node:20-slim
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json* ./
 RUN npm install
 
-COPY app ./app
-COPY accounts ./accounts
+RUN npx playwright install --with-deps chromium
 
-ENV NODE_ENV=production
+COPY . .
 
-CMD ["node", "app/index.js"]
+CMD ["npm", "start"]
