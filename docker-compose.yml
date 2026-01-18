@@ -1,0 +1,24 @@
+services:
+  hr_governance:
+    build: ./governance/hr_bot
+    restart: always
+    volumes:
+      - ./data:/app/data
+
+  strategist_governance:
+    build: ./governance/ai_strategist
+    restart: always
+    volumes:
+      - ./data:/app/data
+
+  scale_governance:
+    build: ./governance/auto_scale
+    restart: always
+    volumes:
+      - ./data:/app/data
+
+  lab_governance:
+    build: ./governance/lab_bot
+    restart: always
+    volumes:
+      - ./data:/app/data
