@@ -44,4 +44,11 @@ kill_switch_governance:
   volumes:
     - ./data:/app/data
     - /var/run/docker.sock:/var/run/docker.sock
+    chaos_governance:
+  build: ./governance/chaos_bot
+  restart: always
+  volumes:
+    - ./data:/app/data
+    - /var/run/docker.sock:/var/run/docker.sock
+
 
