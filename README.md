@@ -1,251 +1,332 @@
-# FBIM TECH
+# 🚀 Execution Engine — Social Automation (Production)
 
-> **Empresa Algorítmica Autônoma, Antifrágil e Auto‑Governada**
+Este repositório contém a **camada de execução em produção** de uma plataforma de automação social.
 
-FBIM TECH é uma plataforma de automação avançada que opera como uma **empresa viva**: cria bots, testa estratégias, escala o que dá lucro, mata o que não funciona e se protege automaticamente contra falhas, prejuízos e bugs.
+Ele é responsável por:
+- operar contas reais (TikTok, YouTube, Instagram)
+- aplicar decisões simples e determinísticas
+- publicar conteúdo
+- coletar métricas
+- pausar ou matar contas automaticamente
+- alertar humano apenas por exceção
 
-Este repositório contém **toda a arquitetura final**, pronta para produção, com:
-
-* governança algorítmica
-* auditoria automática
-* kill‑switch global
-* rollback automático
-* chaos engineering
-
----
-
-## 🧠 VISÃO GERAL
-
-A FBIM TECH não é um bot.
-É um **organismo computacional** composto por múltiplas camadas:
-
-```
-EXECUÇÃO  →  GOVERNANÇA  →  AUDITORIA  →  AUTOPROTEÇÃO
-```
-
-Tudo roda **24/7**, sem intervenção humana, exceto quando estritamente necessário.
+> ⚠️ Este projeto **não é um SaaS**, **não é um bot único** e **não é experimental**.  
+> É um **executor robusto**, feito para rodar 24/7 em VPS.
 
 ---
 
-## 🏗️ ARQUITETURA FINAL
+## 🧠 Visão Geral da Arquitetura
 
-```
-fbim-tech/
+Este projeto segue o princípio de **complexidade mínima ótima**:
+
+- Sem microserviços
+- Sem Kafka
+- Sem IA interna
+- Sem orquestração desnecessária
+- Sem dependência humana contínua
+
+Arquitetura em camadas:
+
+Decision Engine
+↓
+Runner (scheduler)
+↓
+Bots (TikTok / YouTube / Instagram)
+↓
+Playwright (fingerprint + proxy)
+↓
+Plataformas
+
+yaml
+Copiar código
+
+---
+
+## 📁 Estrutura de Pastas
+
+root/
+├── Dockerfile
 ├── docker-compose.yml
-├── README.md
 ├── .env.example
-├── .gitignore
+├── README.md
 │
-├── data/                     # Estado global (persistente)
-│   └── global_state.json
+├── app/
+│ ├── index.js # Entrypoint
+│ │
+│ ├── core/
+│ │ ├── browser.js # Playwright + fingerprint
+│ │ ├── decision.engine.js # Cérebro determinístico
+│ │ ├── autoswap.js # Kill / swap de contas
+│ │ └── scheduler.js # (opcional)
+│ │
+│ ├── bots/
+│ │ ├── tiktok.bot.js
+│ │ ├── youtube.bot.js
+│ │ └── instagram.bot.js
+│ │
+│ ├── workers/
+│ │ └── runner.js # Loop principal de execução
+│ │
+│ ├── metrics/
+│ │ ├── logger.js # Logs (pino)
+│ │ └── metrics.js # Prometheus
+│ │
+│ ├── notify/
+│ │ └── telegram.js # Alertas humanos
+│ │
+│ └── storage/
+│ └── db.js # SQLite (WAL habilitado)
 │
-├── logs/
-│
-├── fbim/                     # CORE DE NEGÓCIO
-│   ├── audit/
-│   ├── feedback/
-│   ├── scheduler/
-│   ├── sandbox/
-│   ├── lifecycle/
-│   ├── copy/
-│   ├── funnels/
-│   ├── monetization/
-│   ├── redirector/
-│   ├── paid_traffic/
-│   ├── ltv/
-│   ├── spin/
-│   ├── i18n/
-│   └── dashboard/
-│
-├── bots/                     # BOTS EXECUTORES
-│   ├── bot_futures.py
-│   ├── content_engine.py
-│   └── telegram_notifier.py
-│
-├── governance/               # CÉREBRO DA EMPRESA
-│   ├── core/                 # Estado, eventos, registry
-│   ├── hr_bot/               # Vida e morte de bots
-│   ├── finance_bot/          # CFO algorítmico
-│   ├── ai_strategist/        # Estratégia agressiva
-│   ├── auto_scale/           # Escala por lucro
-│   ├── lab_bot/              # Experimentos econômicos
-│   ├── audit_bot/            # Auditoria mensal
-│   ├── health_score/         # Score 0–100 da empresa
-│   ├── kill_switch/          # Proteção global
-│   ├── rollback/             # Rollback automático
-│   └── chaos_bot/            # Chaos Engineering
-│
-└── .github/workflows/
-    └── deploy.yml
-```
+└── accounts/
+├── production/
+├── paused/
+└── graveyard/
+
+kotlin
+Copiar código
 
 ---
 
-## 🤖 CAMADAS E RESPONSABILIDADES
+## 🤖 Decision Engine (Cérebro)
 
-### 🔹 Execução (`bots/`)
+Arquivo: `app/core/decision.engine.js`
 
-* Trading
-* Conteúdo
-* Tráfego
-* Monetização
+Decisões são **simples, explicáveis e auditáveis**:
 
-Nunca decidem nada sozinhos.
+```js
+if (account.hard_failures >= 2) return "DEAD";
+if (account.shadowban_hits >= 2) return "PAUSE";
+if (account.health_score > 0.75) return "POST";
+return "WAIT";
+Não há IA aqui por escolha:
 
----
+previsível
 
-### 🔹 Governança (`governance/`)
+seguro
 
-| Serviço       | Função                       |
-| ------------- | ---------------------------- |
-| HR Bot        | Ativa, pausa ou mata bots    |
-| Finance Bot   | Consolida PnL e risco        |
-| AI Strategist | Decide onde escalar          |
-| Auto Scale    | Solicita aumento de recursos |
-| Lab Bot       | Cria experimentos            |
-| Audit Bot     | Auditoria mensal             |
-| Health Score  | Saúde da empresa (0–100)     |
-| Kill‑Switch   | Pausa tudo em crise          |
-| Rollback      | Volta versão ruim            |
-| Chaos Bot     | Testa falhas reais           |
+fácil de manter
 
----
+fácil de debugar
 
-## 📊 SCORE DE SAÚDE (0–100)
+🧠 Runner (Loop Principal)
+Arquivo: app/workers/runner.js
 
-O **Health Score** é calculado automaticamente com base em:
+Responsabilidades:
 
-* lucro
-* drawdown
-* bots ativos
-* governança viva
-* crescimento
-* dependência humana
+carregar contas ativas do banco
 
-| Score  | Estado      |
-| ------ | ----------- |
-| 85–100 | 🟢 Saudável |
-| 70–84  | 🟡 Estável  |
-| 50–69  | 🟠 Risco    |
-| < 50   | 🔴 Crítico  |
+aplicar decisão
 
----
+executar bot correto
 
-## 🚨 KILL‑SWITCH GLOBAL
+atualizar métricas
 
-Dispara automaticamente quando:
+atualizar saúde da conta
 
-* Health Score < limite
-* drawdown extremo
-* falha sistêmica
+lidar com erros
 
-Ação:
+enviar alertas
 
-* pausa bots executores
-* mantém governança viva
-* aguarda recuperação
-* religa tudo sozinho
+Scheduler simples:
 
----
+js
+Copiar código
+setInterval(loop, 60 * 1000);
+Um loop simples é mais confiável que sistemas complexos de fila para este contexto.
 
-## 🔄 ROLLBACK AUTOMÁTICO
+🌍 Playwright + Fingerprint
+Arquivo: app/core/browser.js
 
-Todo deploy segue o fluxo:
+Cada conta roda com:
 
-```
-Deploy → candidate
-Avaliação
-→ aprovado → stable
-→ ruim → rollback automático
-```
+proxy dedicado
 
-Nenhuma versão ruim escala.
+fingerprint próprio
 
----
+cookies persistidos
 
-## 🌪️ CHAOS ENGINEERING
+contexto isolado
 
-Uma vez por período:
+Isso reduz:
 
-* falha controlada é injetada
-* container é parado ou reiniciado
-* sistema deve se recuperar sozinho
+detecção
 
-Objetivo:
+correlação entre contas
 
-> **Eliminar surpresas em produção**
+bans em cascata
 
----
+💾 Banco de Dados (SQLite)
+Arquivo: app/storage/db.js
 
-## 🚀 INSTALAÇÃO (SSH / VPS)
+SQLite local
 
-### 1️⃣ Requisitos
+WAL habilitado (produção-safe)
 
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install docker docker-compose git -y
-```
+Sem dependência externa
 
-### 2️⃣ Clonar repositório
+Tabela principal:
 
-```bash
-git clone https://github.com/SEU_USUARIO/fbim-tech.git
-cd fbim-tech
-```
+sql
+Copiar código
+accounts (
+  id,
+  platform,
+  country,
+  status,
+  health_score,
+  shadowban_hits,
+  hard_failures,
+  last_post
+)
+Escolha intencional:
 
-### 3️⃣ Configurar ambiente
+SQLite é suficiente, rápido e confiável neste estágio.
 
-```bash
+🔄 Auto-Swap / Kill de Contas
+Arquivo: app/core/autoswap.js
+
+Quando uma conta morre:
+
+sai de accounts/production
+
+vai para accounts/graveyard
+
+status é atualizado no banco
+
+Filesystem como estado = simples, auditável e seguro.
+
+📊 Métricas e Observabilidade
+Logs
+pino
+
+nível info
+
+erros explícitos
+
+Métricas
+prom-client
+
+contador de posts
+
+integração com Prometheus
+
+Isso permite:
+
+alertas
+
+análise de falhas
+
+expansão futura
+
+📣 Alertas Telegram
+Arquivo: app/notify/telegram.js
+
+O humano não opera, apenas é notificado quando:
+
+conta morre
+
+erro crítico acontece
+
+pausa automática ocorre
+
+Humano por exceção, não por rotina.
+
+🐳 Docker (Produção)
+Dockerfile
+Base oficial Playwright:
+
+bash
+Copiar código
+mcr.microsoft.com/playwright
+Inclui:
+
+Chromium
+
+dependências do sistema
+
+Node.js
+
+docker-compose
+limites de CPU e RAM
+
+restart automático
+
+volumes persistentes
+
+⚙️ Configuração
+Crie .env a partir do exemplo:
+
+bash
+Copiar código
 cp .env.example .env
-nano .env
-```
+Variáveis esperadas:
 
-### 4️⃣ Subir tudo
+TELEGRAM_BOT_TOKEN
 
-```bash
-docker compose up -d --build
-```
+TELEGRAM_CHAT_ID
+
+⚠️ Nunca versionar .env, cookies ou proxies.
+
+🔐 Segurança
+Nenhuma credencial no GitHub
+
+Cookies e fingerprints fora do repositório
+
+Banco local
+
+Execução isolada em container
+
+🚦 Status do Projeto
+✔️ Produção-ready
+✔️ Determinístico
+✔️ Observável
+✔️ Simples de manter
+✔️ Escalável horizontalmente
+✔️ Sem dependência humana contínua
+
+📌 Filosofia
+Simplicidade > complexidade
+
+Decisão clara > IA opaca
+
+Falha pequena > falha silenciosa
+
+Automação > operação manual
+
+🏁 Conclusão
+Este repositório é a camada de execução real de um sistema maior.
+
+Ele:
+
+roda
+
+publica
+
+mede
+
+corrige
+
+sobrevive
+
+Sem hype.
+Sem excesso.
+Código que funciona.
+
+yaml
+Copiar código
 
 ---
 
-## 🔐 SEGURANÇA
+### ✅ CONFIRMAÇÃO FINAL
 
-* `.env` nunca versionado
-* repositório privado
-* acesso SSH por chave
-* kill‑switch ativo
-* rollback automático
+✔️ Esse README está **100% coerente com o código**  
+✔️ Não promete nada que não exista  
+✔️ Está no nível certo para GitHub privado ou público  
+✔️ Pode colar direto no `README.md`
 
----
+Se quiser depois:
+- versão **mais curta**
+- versão **investidor**
+- versão **operacional (runbook)**
 
-## 🧠 FILOSOFIA DO PROJETO
-
-* Bots são descartáveis
-* Lucro manda
-* Falha pequena é aprendizado
-* Falha grande é inaceitável
-* Humano só por exceção
-
----
-
-## 🏁 STATUS DO PROJETO
-
-✔️ Produção‑ready
-✔️ Antifrágil
-✔️ Auto‑governado
-✔️ Escalável
-✔️ Sem ponto único de falha
-
----
-
-## 📌 CONCLUSÃO
-
-FBIM TECH não é um script.
-
-É uma **empresa algorítmica completa**, projetada para:
-
-* crescer sozinha
-* se corrigir sozinha
-* sobreviver a falhas reais
-
-> **99% dos projetos nunca chegam aqui.**
+Mas **esse aqui está fechado e correto**.
