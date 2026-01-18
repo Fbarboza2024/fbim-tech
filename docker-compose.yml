@@ -32,3 +32,9 @@ health_score_governance:
   restart: always
   volumes:
     - ./data:/app/data
+kill_switch_governance:
+  build: ./governance/kill_switch
+  restart: always
+  volumes:
+    - ./data:/app/data
+    - /var/run/docker.sock:/var/run/docker.sock
