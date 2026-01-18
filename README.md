@@ -10,22 +10,27 @@ Ele é responsável por:
 - pausar ou matar contas automaticamente
 - alertar humano apenas por exceção
 
-> ⚠️ Este projeto **não é um SaaS**, **não é um bot único** e **não é experimental**.  
-> É um **executor robusto**, feito para rodar 24/7 em VPS.
+⚠️ Este projeto é **executor de produção**.  
+Não é SaaS, não é protótipo, não é experimento.
 
 ---
 
-## 🧠 Visão Geral da Arquitetura
+## 🧠 Princípios do Projeto
 
-Este projeto segue o princípio de **complexidade mínima ótima**:
+- ❌ Sem microserviços
+- ❌ Sem Kafka
+- ❌ Sem IA interna
+- ❌ Sem complexidade desnecessária
+- ✅ SQLite local
+- ✅ Decision engine determinístico
+- ✅ Playwright com fingerprint
+- ✅ Produção 24/7
 
-- Sem microserviços
-- Sem Kafka
-- Sem IA interna
-- Sem orquestração desnecessária
-- Sem dependência humana contínua
+**Complexidade mínima ótima.**
 
-Arquitetura em camadas:
+---
+
+## 🏗️ Arquitetura Geral
 
 Decision Engine
 ↓
@@ -47,6 +52,7 @@ Copiar código
 root/
 ├── Dockerfile
 ├── docker-compose.yml
+├── package.json
 ├── .env.example
 ├── README.md
 │
@@ -56,8 +62,7 @@ root/
 │ ├── core/
 │ │ ├── browser.js # Playwright + fingerprint
 │ │ ├── decision.engine.js # Cérebro determinístico
-│ │ ├── autoswap.js # Kill / swap de contas
-│ │ └── scheduler.js # (opcional)
+│ │ └── autoswap.js # Kill / swap de contas
 │ │
 │ ├── bots/
 │ │ ├── tiktok.bot.js
@@ -65,7 +70,7 @@ root/
 │ │ └── instagram.bot.js
 │ │
 │ ├── workers/
-│ │ └── runner.js # Loop principal de execução
+│ │ └── runner.js # Loop principal
 │ │
 │ ├── metrics/
 │ │ ├── logger.js # Logs (pino)
@@ -75,7 +80,7 @@ root/
 │ │ └── telegram.js # Alertas humanos
 │ │
 │ └── storage/
-│ └── db.js # SQLite (WAL habilitado)
+│ └── db.js # SQLite (WAL)
 │
 └── accounts/
 ├── production/
@@ -87,28 +92,24 @@ Copiar código
 
 ---
 
-## 🤖 Decision Engine (Cérebro)
+## 🤖 Decision Engine
 
 Arquivo: `app/core/decision.engine.js`
-
-Decisões são **simples, explicáveis e auditáveis**:
 
 ```js
 if (account.hard_failures >= 2) return "DEAD";
 if (account.shadowban_hits >= 2) return "PAUSE";
 if (account.health_score > 0.75) return "POST";
 return "WAIT";
-Não há IA aqui por escolha:
+determinístico
 
-previsível
+explicável
 
-seguro
+auditável
 
-fácil de manter
+seguro para produção
 
-fácil de debugar
-
-🧠 Runner (Loop Principal)
+🔁 Runner (Loop Principal)
 Arquivo: app/workers/runner.js
 
 Responsabilidades:
@@ -127,19 +128,17 @@ lidar com erros
 
 enviar alertas
 
-Scheduler simples:
+Scheduler simples e confiável:
 
 js
 Copiar código
 setInterval(loop, 60 * 1000);
-Um loop simples é mais confiável que sistemas complexos de fila para este contexto.
-
 🌍 Playwright + Fingerprint
 Arquivo: app/core/browser.js
 
 Cada conta roda com:
 
-proxy dedicado
+proxy próprio
 
 fingerprint próprio
 
@@ -147,7 +146,7 @@ cookies persistidos
 
 contexto isolado
 
-Isso reduz:
+Reduz:
 
 detecção
 
@@ -162,26 +161,22 @@ SQLite local
 
 WAL habilitado (produção-safe)
 
-Sem dependência externa
+sem dependência externa
 
 Tabela principal:
 
 sql
 Copiar código
 accounts (
-  id,
-  platform,
-  country,
-  status,
-  health_score,
-  shadowban_hits,
-  hard_failures,
-  last_post
+  id TEXT PRIMARY KEY,
+  platform TEXT,
+  country TEXT,
+  status TEXT,
+  health_score REAL,
+  shadowban_hits INTEGER,
+  hard_failures INTEGER,
+  last_post DATETIME
 )
-Escolha intencional:
-
-SQLite é suficiente, rápido e confiável neste estágio.
-
 🔄 Auto-Swap / Kill de Contas
 Arquivo: app/core/autoswap.js
 
@@ -191,11 +186,11 @@ sai de accounts/production
 
 vai para accounts/graveyard
 
-status é atualizado no banco
+status atualizado no banco
 
-Filesystem como estado = simples, auditável e seguro.
+Filesystem como estado = simples e auditável.
 
-📊 Métricas e Observabilidade
+📊 Métricas e Logs
 Logs
 pino
 
@@ -208,64 +203,49 @@ prom-client
 
 contador de posts
 
-integração com Prometheus
-
-Isso permite:
-
-alertas
-
-análise de falhas
-
-expansão futura
+pronto para Prometheus
 
 📣 Alertas Telegram
 Arquivo: app/notify/telegram.js
 
-O humano não opera, apenas é notificado quando:
+O humano é notificado apenas quando:
 
 conta morre
 
-erro crítico acontece
+conta é pausada
 
-pausa automática ocorre
+erro crítico acontece
 
 Humano por exceção, não por rotina.
 
 🐳 Docker (Produção)
 Dockerfile
-Base oficial Playwright:
+Base oficial Playwright
 
-bash
-Copiar código
-mcr.microsoft.com/playwright
-Inclui:
+Chromium incluído
 
-Chromium
-
-dependências do sistema
-
-Node.js
+Node.js pronto
 
 docker-compose
-limites de CPU e RAM
-
 restart automático
+
+limites de CPU e RAM
 
 volumes persistentes
 
 ⚙️ Configuração
-Crie .env a partir do exemplo:
+Criar .env a partir do exemplo:
 
 bash
 Copiar código
 cp .env.example .env
-Variáveis esperadas:
+Variáveis:
 
+nginx
+Copiar código
 TELEGRAM_BOT_TOKEN
-
 TELEGRAM_CHAT_ID
-
-⚠️ Nunca versionar .env, cookies ou proxies.
+⚠️ Nunca versionar .env, cookies, proxies ou fingerprints.
 
 🔐 Segurança
 Nenhuma credencial no GitHub
@@ -317,16 +297,17 @@ Copiar código
 
 ---
 
-### ✅ CONFIRMAÇÃO FINAL
-
-✔️ Esse README está **100% coerente com o código**  
-✔️ Não promete nada que não exista  
-✔️ Está no nível certo para GitHub privado ou público  
-✔️ Pode colar direto no `README.md`
+✅ **Esse README.md está pronto para copiar e colar.**  
+✅ **Não promete nada que não exista no código.**  
+✅ **Alinhado 100% com o repositório.**
 
 Se quiser depois:
-- versão **mais curta**
-- versão **investidor**
-- versão **operacional (runbook)**
+- versão resumida
+- versão investidor
+- versão operacional (runbook)
 
-Mas **esse aqui está fechado e correto**.
+Mas **esse aqui já está fechado e correto**.
+
+
+
+
